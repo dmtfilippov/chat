@@ -1,0 +1,46 @@
+extends layout
+
+block content
+    h1 Чатик
+    .chat
+        .chat__list
+            p.chat__msg(v-for='message in messages', track-by='$index') {{ message }}
+        input.chat__input(type='text',placeholder='Сообщение',v-model='message')
+        button.chat__send(v-on:click='send') отправить
+    .users
+        p: b Список пользователей:
+        ul.users__list
+            li.users__item(v-for='user in onlineUsers', track-by='$index') {{ user }}
+    script.
+        var socket = io();
+
+        new Vue({
+            el: '.chat',
+            data: {
+                message: '',
+                messages: []
+            },
+            methods: {
+                send: function (e) {
+                    socket.emit('message.sent', this.message);
+                    this.message = '';
+                }
+            },
+            ready: function () {
+                socket.on('message', function (message) {
+                    this.messages.push(message);
+                }.bind(this));
+            }
+        });
+
+        new Vue({
+            el: '.users',
+            data: {
+                onlineUsers: []
+            },
+            ready: function () {
+                socket.on('online users', function (onlineUsers) {
+                    this.onlineUsers = onlineUsers;
+                }.bind(this));
+            }
+        });
